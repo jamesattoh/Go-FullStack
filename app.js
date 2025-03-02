@@ -1,6 +1,14 @@
 const express = require('express');
 
+const mongoose = require('mongoose');
+
 const app = express();
+
+mongoose.connect('mongodb+srv://dolgen:OPCmongo%2325@cluster0.ljg4u.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', //# → %23 (encodage URL de #)
+  { useNewUrlParser: true,
+    useUnifiedTopology: true })
+  .then(() => console.log('Connexion à MongoDB réussie !'))
+  .catch(() => console.log('Connexion à MongoDB échouée !'));
 
 app.use(express.json()); // permet d'avoir accès au corps de la requête
 
