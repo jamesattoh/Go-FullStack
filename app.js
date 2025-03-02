@@ -2,13 +2,16 @@ const express = require('express');
 
 const mongoose = require('mongoose');
 
+require('dotenv').config(); // charge les variables d'environnement
+ 
 const app = express();
 
-mongoose.connect('mongodb+srv://dolgen:OPCmongo%2325@cluster0.ljg4u.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', //# → %23 (encodage URL de #)
-  { useNewUrlParser: true,
-    useUnifiedTopology: true })
-  .then(() => console.log('Connexion à MongoDB réussie !'))
-  .catch(() => console.log('Connexion à MongoDB échouée !'));
+// on construit l'URL de connexion à partir des variables d'environnement
+const mongoURI = `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_CLUSTER}/?${process.env.MONGODB_OPTIONS}`
+
+mongoose.connect(mongoURI)
+.then(() => console.log('Connexion à MongoDB réussie !'))
+.catch(() => console.log('Connexion à MongoDB échouée !'));
 
 app.use(express.json()); // permet d'avoir accès au corps de la requête
 
