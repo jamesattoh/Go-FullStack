@@ -1,10 +1,10 @@
 const express = require('express');
-
 const mongoose = require('mongoose');
-
 require('dotenv').config(); // charge les variables d'environnement
- 
-const app = express();
+
+const Thing = require('./models/Thing');
+
+
 
 // on construit l'URL de connexion à partir des variables d'environnement
 const mongoURI = `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_CLUSTER}/?${process.env.MONGODB_OPTIONS}`
@@ -12,6 +12,8 @@ const mongoURI = `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MO
 mongoose.connect(mongoURI)
 .then(() => console.log('Connexion à MongoDB réussie !'))
 .catch(() => console.log('Connexion à MongoDB échouée !'));
+
+const app = express();
 
 app.use(express.json()); // permet d'avoir accès au corps de la requête
 
@@ -26,35 +28,29 @@ app.use((req, res, next) => {
 
 
 app.post('/api/stuff', (req, res, next) => {
-  console.log(req.body); // Affiche les données JSON (le corps) envoyées dans la requête
-  res.status(201).json({ //sans ça la requete va planter côté utilisateur
-    message : 'Objet créé !' 
+  delete req.body._id; //on supprime en amont le faux_id envoyé par le front-end
+
+  const thing = new Thing({
+    ...req.body //L'opérateur spread ... est utilisé pour faire une copie de tous les éléments de req.body
   });
+  
+  thing.save() // save() qui enregistre simplement le Thing dans la base de données.
+    .then(() => res.status(201).json({ message: 'Objet enregistré !' })) // save() renvoie une Promise. Ainsi, dans le bloc then() , on renvoit une réponse de réussite avec un code 201
+    .catch(error => res.status(400).json({ error })) // Dans le catch(),on renvoit une réponse avec l'erreur générée par Mongoose ainsi qu'un code d'erreur 400
 });
 
+// recuperer un seul objet dans l'ensemble des elements de la base de données
+app.get('/api/stuff/:id', (req, res, next) => { // avec ':' en face du segment dynamique de la route, c'est pour la rendre accessible en tant que paramètre
+  Thing.findOne({ _id: req.params.id }) // Utilisation de la méthode findOne() de Mongoose pour trouver un objet par son id
+    .then(thingo => res.status(200).json(thingo))
+    .catch(error => res.status(404).json({ error }))
+})
 
 // rendre disponible une liste de certains objets à travers l'api
 app.get('/api/stuff', (req, res, next) => {
-const stuff = [
-  {
-    _id: 'oeihfzeoi',
-    title: 'Mon premier objet',
-    description: 'Les infos de mon premier objet',
-    imageUrl: 'https://cdn.pixabay.com/photo/2019/06/11/18/56/camera-4267692_1280.jpg',
-    price: 4900,
-    userId: 'qsomihvqios',
-  },
-  {
-    _id: 'oeihfzeomoihi',
-    title: 'Mon deuxième objet',
-    description: 'Les infos de mon deuxième objet',
-    imageUrl: 'https://cdn.pixabay.com/photo/2019/06/11/18/56/camera-4267692_1280.jpg',
-    price: 2900,
-    userId: 'qsomihvqios',
-  },
-];
-
-res.status(200).json(stuff);
+  Thing.find() // la méthode find() dans notre modèle Mongoose renvoit un tableau contenant tous les Things de notre base de données
+    .then(thingos => res.status(200).json(thingos))
+    .catch(error => res.status(400).json({ error }))
 
 });
 
