@@ -39,6 +39,23 @@ app.post('/api/stuff', (req, res, next) => {
     .catch(error => res.status(400).json({ error })) // Dans le catch(),on renvoit une réponse avec l'erreur générée par Mongoose ainsi qu'un code d'erreur 400
 });
 
+// modifier un element dans la base de données
+app.put('/api/stuff/:id', (req, res, next) => { 
+  Thing.updateOne(  //updateOne() permet de mettre à jour le Thing qui correspond à l'objet que nous passons comme premier argument
+    { _id: req.params.id}, // le premier argument
+    { ...req.body, _id: req.params.id} //on utilise le paramètre id passé dans la demande, et on le remplace par le Thing passé comme second argument.
+  )
+    .then(()=> res.status(200).json({ message: 'Objet modifié !'}))
+    .catch(error => res.status(400).json(error))
+})
+
+// supprimer un element dans la base de données
+app.delete('/api/stuff/:id', (req, res, next) => {
+  Thing.deleteOne({ _id: req.params.id })
+    .then(thing => res.status(200).json(thing))
+    .catch(error => res.status(400).json({ error }))
+})
+
 // recuperer un seul objet dans l'ensemble des elements de la base de données
 app.get('/api/stuff/:id', (req, res, next) => { // avec ':' en face du segment dynamique de la route, c'est pour la rendre accessible en tant que paramètre
   Thing.findOne({ _id: req.params.id }) // Utilisation de la méthode findOne() de Mongoose pour trouver un objet par son id
