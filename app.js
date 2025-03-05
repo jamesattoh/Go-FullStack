@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 require('dotenv').config(); // charge les variables d'environnement
 
 const stuffRoutes = require('./routes/stuff');
+const userRoutes = require('./routes/user');
 
 // on construit l'URL de connexion à partir des variables d'environnement
 const mongoURI = `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_CLUSTER}/?${process.env.MONGODB_OPTIONS}`
@@ -26,5 +27,5 @@ app.use(express.json()); // permet d'avoir accès au corps de la requête
 
 app.use('/api/stuff', stuffRoutes); // gère l'ensembles des routes pour toutes les requetes commençant par /api/stuff
 
-
+app.use('/api/auth', userRoutes);
 module.exports = app;
