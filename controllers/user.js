@@ -1,5 +1,7 @@
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
 
 exports.signup = (req, res, next) =>{
     // on doit premierement hasher le password car c'est une operation asynchrone qui est un peu chronophage et dans laquelle on recoit le hash généré
@@ -30,7 +32,17 @@ exports.login = (req, res, next) =>{
                         } else {
                             res.status(200).json({ //si tout est bon on renvoit une reponse cotenant l'ID utilisateur et un token
                                 userId: user._id,
-                                token: 'TOKEN'
+                                token: jwt.sign( //sign() est une methode pour creer un token
+                                    { userId: user._id }, //les données (payload) qu"on veut encoder dans le token
+                                    'RANDOM_TOKEN_SECRET', //la clé secrète pour signer le token (l'encodage)
+                                    { expiresIn: '24h'} //argument de configuration; ici, l'expiration du token
+                                )
+                                /**
+                                 * Utilisation du token :
+                                 * Le client (navigateur ou app mobile) stocke le token (généralement dans le stockage local ou les cookies) et l'envoie avec chaque requête suivante au serveur pour prouver son identité.
+                                 * Le serveur vérifie le token en utilisant la clé secrète 
+                                 * En bref, le token JWT permet de sécuriser les communications entre le client et le serveur en prouvant l'identité de l'utilisateur de manière sécurisée et en limitant la durée de validité du token.
+                                 */
                             })
                         }
                     })
