@@ -1,15 +1,18 @@
 const Thing = require('../models/Thing');
 
 exports.createThing = (req, res, next) => {
-  delete req.body._id; //on supprime en amont le faux_id envoyé par le front-end
-
+  const thingObject = JSON.parse(req.body.thing);
+  delete thingObject._id; // l'id de l'objet sera automatiquement généré par notre base de données
+  delete thingObject._userId; //ne pas faire confiance aux utilisateurs. Nous le remplaçerons en base de données par le _userId extrait du token par le middleware d’authentification.
   const thing = new Thing({
-    ...req.body //L'opérateur spread ... est utilisé pour faire une copie de tous les éléments de req.body
+    ...thingObject, //ce qui a ete parsé moins les deux champs supprimés
+    userId: req.auth.userId,
+    imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}` //generer l'url par nous meme
   });
-  
-  thing.save() // save() qui enregistre simplement le Thing dans la base de données.
-    .then(() => res.status(201).json({ message: 'Objet enregistré !' })) // save() renvoie une Promise. Ainsi, dans le bloc then() , on renvoit une réponse de réussite avec un code 201
-    .catch(error => res.status(400).json({ error })) // Dans le catch(),on renvoit une réponse avec l'erreur générée par Mongoose ainsi qu'un code d'erreur 400
+
+  thing.save()
+    .then(()=> res.status(201).json({ message: 'Objet enrégistré !'}))
+    .catch(error => res.status(400).json({ error }))
 };
 
 exports.modifyThing = (req, res, next) => { 
@@ -18,7 +21,26 @@ exports.modifyThing = (req, res, next) => {
     { ...req.body, _id: req.params.id} //on utilise le paramètre id passé dans la demande, et on le remplace par le Thing passé comme second argument.
   )
     .then(()=> res.status(200).json({ message: 'Objet modifié !'}))
-    .catch(error => res.status(400).json(error))
+    .catch(error => res.status(400).json({ error }))
+
+  // const thingObject = req.file ? {
+  //   ...JSON.parse(req.body.thing),
+  //   imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+  // } : { ...req.body};
+
+  // delete thingObject._userId;
+
+  // Thing.findOne( { _id: req.params._id})
+  //   .then( (thing) => {
+  //     if (thing.userId != req.auth.userId) {
+  //       res.status(400).json({ message: 'Non autorisé !'})
+  //     } else {
+  //       Thing.updateOne({ _id: req.params.id}, { ...thingObject, _id: req.params.id})
+  //         .then(() => res.status(200).json({ message: 'Objet modifié !'}))
+  //         .catch(error => res.status(401).json({ error }))
+  //     }
+  //   })
+  //   .catch(error => res.status(400).json({ error }))
 };
 
 exports.deleteThing = (req, res, next) => {
