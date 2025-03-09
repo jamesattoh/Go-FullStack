@@ -32,7 +32,7 @@ app.use('/api/auth', userRoutes);
 const path = require('path'); //Il nous faudra accéder au path de notre serveur :
 app.use('/images', express.static(path.join(__dirname, 'images'))); //un route qui sert des fichiers statiques
 
-/** * En fait, nous effectuons une demande GET vers  http://localhost:3000/images/<image-name>.jpg. Vu que notre app s'exécute sur localhost:3000 et que nous ne lui avons pas indiqué comment 
+/** * 👆 En fait, nous effectuons une demande GET vers  http://localhost:3000/images/<image-name>.jpg. Vu que notre app s'exécute sur localhost:3000 et que nous ne lui avons pas indiqué comment 
  * répondre aux requêtes transmises à cette route : elle renvoie donc une erreur 404. Pour remédier à cela, nous devons indiquer à notre app.js comment traiter les requêtes vers la route /image,
  * en rendant notre dossier images statique.  */
 
